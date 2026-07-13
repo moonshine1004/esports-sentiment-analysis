@@ -1,0 +1,40 @@
+# 환경변수와 API 키
+.env
+.env.*
+!.env.example
+
+# Python 캐시
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 가상환경
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 연구 데이터와 분석 결과
+data/raw/*
+data/interim/*
+data/human_coding/*
+data/results/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/human_coding/.gitkeep
+!data/results/.gitkeep
+
+# 임시 파일
+*.tmp
+*.log
+~$*.xlsx
+
+# 운영체제 파일
+.DS_Store
+Thumbs.db
