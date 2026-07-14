@@ -20,7 +20,7 @@ from text_utils import (
 
 
 # =====================================================================
-# 1. 파일 경로
+# 1. 파일 경로 설정
 # =====================================================================
 INPUT_PATH = (
     RESULTS_DIR
@@ -34,7 +34,7 @@ FIGURE_DIR = (
 
 
 # =====================================================================
-# 2. 그래프 설정
+# 2. 일반 그래프 설정
 # =====================================================================
 TASK_CONFIG = {
     "sentiment": {
@@ -59,27 +59,42 @@ TASK_CONFIG = {
     },
 }
 
-# 사례별 라벨명
+
+TARGET_STANCE_PATH = (
+    FIGURE_DIR
+    / "figure_05_target_by_stance.png"
+)
+
+
+# =====================================================================
+# 3. 그래프명 
+# =====================================================================
 CASE_DISPLAY_NAMES = {
     "01": "룬 설정 오류",
     "02": "강타 재사용 대기시간 오류",
-    "03": "전체 경기 하이라이트",
+    "03": "경기 전체",
 }
 
-# 그래프 색상 설정
-BAR_COLORS = [
-    "#4C78A8",  # 통합데이터
-    "#F2A65A",  # 사례 01
-    "#59A14F",  # 사례 02
-    "#E15759",  # 사례 03
+CASE_COLORS = [
+    "#4C78A8",
+    "#F2A65A",
+    "#59A14F",
+    "#E15759",
+]
+
+
+STANCE_COLORS = [
+    "#4C78A8",
+    "#F2A65A",
+    "#59A14F",
+    "#9C9C9C",
 ]
 
 plt.rcParams["font.family"] = "Malgun Gothic"
 plt.rcParams["axes.unicode_minus"] = False
 
-
 # =====================================================================
-# 3. 자료 불러오기
+# 4. 자료 불러오기
 # =====================================================================
 def load_data() -> pd.DataFrame:
     if not INPUT_PATH.exists():
@@ -150,9 +165,8 @@ def load_data() -> pd.DataFrame:
 
     return df
 
-
 # =====================================================================
-# 4. 라벨 검사
+# 5. 라벨 검사
 # =====================================================================
 def validate_labels(
     df: pd.DataFrame,
@@ -194,9 +208,8 @@ def validate_labels(
                 f"{invalid_values}"
             )
 
-
 # =====================================================================
-# 5. 통합데이터와 사례별 자료 구성
+# 6. 통합데이터와 사례별 자료
 # =====================================================================
 def get_case_groups(
     df: pd.DataFrame,
@@ -248,26 +261,36 @@ def get_case_groups(
             }
         )
 
+    if len(groups) > len(CASE_COLORS):
+        raise ValueError(
+            "사례 수보다 CASE_COLORS의 색상 수가 적습니다."
+        )
+
     return groups
 
-
 # =====================================================================
-# 6. 막대 끝 표기
+# 7. 막대 위 숫자 표시
 # =====================================================================
 def add_bar_labels(
     ax,
     bars,
-    counts: pd.Series,
-    percentages: pd.Series,
+    counts,
+    percentages,
     offset: float,
+    fontsize: float = 8,
 ) -> None:
     for bar, count, percentage in zip(
         bars,
-        counts.values,
-        percentages.values,
+        counts,
+        percentages,
     ):
+        count = int(count)
+
+        if count == 0:
+            continue
+
         label_text = (
-            f"{int(count):,}"
+            f"{count:,}"
             f"({percentage:.0f}%)"
         )
 
@@ -279,15 +302,15 @@ def add_bar_labels(
             label_text,
             ha="center",
             va="bottom",
-            fontsize=8,
+            fontsize=fontsize,
             color="#222222",
         )
 
 
 # =====================================================================
-# 7. 그래프 생성
+# 8. 일반 분포 그래프
 # =====================================================================
-def create_bar_chart(
+def create_grouped_bar_chart(
     df: pd.DataFrame,
     column: str,
     labels: list[str],
@@ -296,11 +319,6 @@ def create_bar_chart(
     groups = get_case_groups(df)
 
     group_count = len(groups)
-
-    if group_count > len(BAR_COLORS):
-        raise ValueError(
-            "사례 수보다 BAR_COLORS의 색상 수가 적습니다."
-        )
 
     x = np.arange(
         len(labels)
@@ -315,7 +333,7 @@ def create_bar_chart(
 
     figure_width = max(
         11,
-        len(labels) * 2.6,
+        len(labels) * 2.7,
     )
 
     fig, ax = plt.subplots(
@@ -325,7 +343,7 @@ def create_bar_chart(
         )
     )
 
-    group_results = []
+    result_rows = []
     max_count = 0
 
     for group_index, group in enumerate(
@@ -353,12 +371,12 @@ def create_bar_chart(
             int(counts.max()),
         )
 
-        group_results.append(
+        result_rows.append(
             {
+                "group_index": group_index,
                 "name": group["name"],
                 "counts": counts,
                 "percentages": percentages,
-                "index": group_index,
             }
         )
 
@@ -367,8 +385,10 @@ def create_bar_chart(
         1,
     )
 
-    for result in group_results:
-        group_index = result["index"]
+    for result in result_rows:
+        group_index = result[
+            "group_index"
+        ]
 
         positions = (
             x
@@ -381,7 +401,7 @@ def create_bar_chart(
             positions,
             result["counts"].values,
             width=bar_width,
-            color=BAR_COLORS[
+            color=CASE_COLORS[
                 group_index
             ],
             edgecolor="#444444",
@@ -392,16 +412,19 @@ def create_bar_chart(
         add_bar_labels(
             ax=ax,
             bars=bars,
-            counts=result["counts"],
-            percentages=(
-                result["percentages"]
-            ),
+            counts=result[
+                "counts"
+            ].values,
+            percentages=result[
+                "percentages"
+            ].values,
             offset=label_offset,
+            fontsize=8,
         )
 
     upper_limit = max(
         10,
-        max_count * 1.22,
+        max_count * 1.25,
     )
 
     ax.set_ylim(
@@ -451,10 +474,229 @@ def create_bar_chart(
         "right"
     ].set_visible(False)
 
-    ax.tick_params(
-        axis="both",
-        labelsize=10,
+    plt.tight_layout()
+
+    plt.savefig(
+        output_path,
+        dpi=300,
+        bbox_inches="tight",
     )
+
+    plt.close(fig)
+
+
+# =====================================================================
+# 9. 통합데이터 대상별 태도 그래프
+# =====================================================================
+def create_target_by_stance_chart(
+    df: pd.DataFrame,
+    output_path,
+) -> None:
+    target_labels = list(
+        TARGET_VALUES
+    )
+
+    stance_labels = list(
+        STANCE_VALUES
+    )
+
+    target_count = len(
+        target_labels
+    )
+
+    stance_count = len(
+        stance_labels
+    )
+
+    if stance_count > len(STANCE_COLORS):
+        raise ValueError(
+            "태도 수보다 STANCE_COLORS의 색상 수가 적습니다."
+        )
+
+    x = np.arange(
+        target_count
+    )
+
+    cluster_width = 0.84
+
+    bar_width = (
+        cluster_width
+        / stance_count
+    )
+
+    figure_width = max(
+        12,
+        target_count * 2.8,
+    )
+
+    fig, ax = plt.subplots(
+        figsize=(
+            figure_width,
+            7,
+        )
+    )
+
+    target_totals = (
+        df["gpt_target"]
+        .value_counts()
+        .reindex(
+            target_labels,
+            fill_value=0,
+        )
+    )
+
+    result_rows = []
+    max_count = 0
+
+    for stance_index, stance in enumerate(
+        stance_labels
+    ):
+        stance_df = df[
+            df["gpt_stance"].eq(
+                stance
+            )
+        ]
+
+        counts = (
+            stance_df[
+                "gpt_target"
+            ]
+            .value_counts()
+            .reindex(
+                target_labels,
+                fill_value=0,
+            )
+        )
+
+        percentages = []
+
+        for target in target_labels:
+            target_total = int(
+                target_totals[target]
+            )
+
+            count = int(
+                counts[target]
+            )
+
+            if target_total > 0:
+                percentage = (
+                    count
+                    / target_total
+                    * 100
+                )
+            else:
+                percentage = 0.0
+
+            percentages.append(
+                percentage
+            )
+
+        max_count = max(
+            max_count,
+            int(counts.max()),
+        )
+
+        result_rows.append(
+            {
+                "stance_index": stance_index,
+                "stance": stance,
+                "counts": counts.values,
+                "percentages": percentages,
+            }
+        )
+
+    label_offset = max(
+        max_count * 0.012,
+        1,
+    )
+
+    for result in result_rows:
+        stance_index = result[
+            "stance_index"
+        ]
+
+        positions = (
+            x
+            - cluster_width / 2
+            + bar_width / 2
+            + stance_index * bar_width
+        )
+
+        bars = ax.bar(
+            positions,
+            result["counts"],
+            width=bar_width,
+            color=STANCE_COLORS[
+                stance_index
+            ],
+            edgecolor="#444444",
+            linewidth=0.5,
+            label=result["stance"],
+        )
+
+        add_bar_labels(
+            ax=ax,
+            bars=bars,
+            counts=result["counts"],
+            percentages=result[
+                "percentages"
+            ],
+            offset=label_offset,
+            fontsize=8,
+        )
+
+    upper_limit = max(
+        10,
+        max_count * 1.27,
+    )
+
+    ax.set_ylim(
+        0,
+        upper_limit,
+    )
+
+    ax.set_xticks(x)
+
+    ax.set_xticklabels(
+        target_labels,
+        fontsize=10,
+    )
+
+    ax.set_ylabel(
+        "건수",
+        fontsize=10,
+    )
+
+    ax.set_axisbelow(True)
+
+    ax.grid(
+        axis="y",
+        color="#D9D9D9",
+        linewidth=0.8,
+        alpha=0.7,
+    )
+
+    ax.legend(
+        frameon=False,
+        ncol=stance_count,
+        loc="upper center",
+        bbox_to_anchor=(
+            0.5,
+            1.12,
+        ),
+        fontsize=9,
+        columnspacing=2.0,
+        handlelength=1.8,
+    )
+
+    ax.spines[
+        "top"
+    ].set_visible(False)
+
+    ax.spines[
+        "right"
+    ].set_visible(False)
 
     plt.tight_layout()
 
@@ -468,7 +710,7 @@ def create_bar_chart(
 
 
 # =====================================================================
-# 8. 실행
+# 10. 실행
 # =====================================================================
 def main() -> None:
     FIGURE_DIR.mkdir(
@@ -478,18 +720,25 @@ def main() -> None:
 
     df = load_data()
 
+    # 기존 네 개 분포 그래프
     for config in TASK_CONFIG.values():
         output_path = (
             FIGURE_DIR
             / config["filename"]
         )
 
-        create_bar_chart(
+        create_grouped_bar_chart(
             df=df,
             column=config["column"],
             labels=config["labels"],
             output_path=output_path,
         )
+
+    # 통합데이터 대상별 태도 그래프
+    create_target_by_stance_chart(
+        df=df,
+        output_path=TARGET_STANCE_PATH,
+    )
 
     print("=" * 60)
     print("GPT 결과 시각화 완료")
@@ -501,6 +750,10 @@ def main() -> None:
             FIGURE_DIR
             / config["filename"]
         )
+
+    print(
+        TARGET_STANCE_PATH
+    )
 
 
 if __name__ == "__main__":
