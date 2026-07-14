@@ -25,6 +25,7 @@ data/raw/*
 data/interim/*
 data/human_coding/*
 data/results/*
+data/archive/*
 !data/raw/.gitkeep
 !data/interim/.gitkeep
 !data/human_coding/.gitkeep

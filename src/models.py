@@ -1,5 +1,5 @@
 """
-GPT 구조화 출력의 데이터 형식 정의
+GPT 구조화 출력 스키마
 """
 
 from pydantic import (
@@ -14,13 +14,15 @@ from labels import (
     StanceLabel,
 )
 
-from pydantic import BaseModel, ConfigDict
 
-from labels import (
-    SentimentLabel,
-    TargetLabel,
-    StanceLabel,
-)
+class TargetAttitudeResult(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+
+    target: TargetLabel
+    stance: StanceLabel
+
 
 class GPTClassificationResult(BaseModel):
     model_config = ConfigDict(
@@ -28,9 +30,15 @@ class GPTClassificationResult(BaseModel):
     )
 
     sentiment: SentimentLabel
-    target: TargetLabel
-    stance: StanceLabel
+
+    target_attitude: TargetAttitudeResult
+
     is_sarcasm_mockery: bool
+
+    reason: str = Field(
+        min_length=1,
+        max_length=160,
+    )
 
 
 CLASSIFICATION_SCHEMA = (

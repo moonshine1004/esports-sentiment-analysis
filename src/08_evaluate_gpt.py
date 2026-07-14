@@ -186,6 +186,7 @@ def load_gpt_predictions() -> pd.DataFrame:
         "gpt_is_sarcasm_mockery",
         "model",
         "prompt_version",
+        "gpt_reason",
     }
 
     missing_columns = (
@@ -289,6 +290,7 @@ def merge_evaluation_data(
         "gpt_target",
         "gpt_stance",
         "gpt_is_sarcasm_mockery",
+        "gpt_reason",
         "model",
         "prompt_version",
     ]
@@ -629,6 +631,7 @@ def create_error_cases(
                     "prompt_version": (
                         row["prompt_version"]
                     ),
+                    "gpt_reason": row["gpt_reason"],
                 }
             )
 

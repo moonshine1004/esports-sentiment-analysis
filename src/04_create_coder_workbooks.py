@@ -10,7 +10,6 @@ from openpyxl.worksheet.datavalidation import DataValidation
 
 from config import (
     HUMAN_DIR,
-    CODER2_SAMPLE_SIZE,
 )
 from labels import (
     SENTIMENT_VALUES,
@@ -26,8 +25,6 @@ from labels import (
 INPUT_PATH = HUMAN_DIR / "human_sample_master.csv"
 
 CODER1_PATH = HUMAN_DIR / "coder1_coding.xlsx"
-CODER2_PATH = HUMAN_DIR / "coder2_coding.xlsx"
-
 
 # =====================================================================
 # 2. 출력 열
@@ -71,7 +68,6 @@ def load_sample() -> pd.DataFrame:
         "comment_type",
         "parent_text",
         "analysis_text",
-        "coder2_overlap",
     }
 
     missing_columns = required_columns - set(df.columns)
@@ -268,50 +264,23 @@ def create_workbook(
 # 7. 실행
 # =====================================================================
 def main() -> None:
-    if CODER1_PATH.exists() or CODER2_PATH.exists():
+    if CODER1_PATH.exists():
         raise FileExistsError(
-            "코더 파일이 이미 존재합니다."
+            "coder1_coding.xlsx가 이미 존재합니다."
         )
 
     df = load_sample()
 
-    overlap_mask = (
-        df["coder2_overlap"]
-        .astype(str)
-        .str.strip()
-        .str.lower()
-        .eq("true")
-    )
-
-    coder1_df = df.copy()
-
-    coder2_df = df[
-        overlap_mask
-    ].copy()
-
-    if len(coder2_df) != CODER2_SAMPLE_SIZE:
-        raise ValueError(
-            "코더 2 표본 수가 설정값과 다릅니다. "
-            f"현재: {len(coder2_df)}"
-        )
-
     create_workbook(
-        coder1_df,
+        df,
         CODER1_PATH,
     )
 
-    create_workbook(
-        coder2_df,
-        CODER2_PATH,
-    )
-
     print("=" * 60)
-    print("코더별 Excel 생성 완료")
+    print("인간 코딩 Excel 생성 완료")
     print("=" * 60)
-    print(f"코더 1 표본: {len(coder1_df)}개")
-    print(f"코더 2 표본: {len(coder2_df)}개")
-    print(f"코더 1: {CODER1_PATH}")
-    print(f"코더 2: {CODER2_PATH}")
+    print(f"코딩 표본: {len(df)}개")
+    print(f"파일: {CODER1_PATH}")
 
 
 if __name__ == "__main__":

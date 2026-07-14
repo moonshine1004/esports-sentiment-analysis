@@ -1,5 +1,5 @@
 """
-전처리된 댓글을 GPT로 반복 분류
+전처리된 댓글을 GPT로 분류
 """
 
 from datetime import datetime, timezone
@@ -19,6 +19,7 @@ from config import (
     REPEAT_COUNT,
     PROMPT_VERSION,
     API_DELAY_SECONDS,
+    OPENAI_SERVICE_TIER,
     require_openai_configuration,
 )
 from models import GPTClassificationResult
@@ -35,7 +36,7 @@ INPUT_PATH = (
 
 PROMPT_PATH = (
     PROMPTS_DIR
-    / "classification_prompt_v1.txt"
+    / "classification_prompt_v3.txt"
 )
 
 OUTPUT_CSV_PATH = (
@@ -292,7 +293,8 @@ def classify_comment(
             reasoning={
                 "effort": "none",
             },
-            max_output_tokens=100,
+            max_output_tokens=180,
+            service_tier=OPENAI_SERVICE_TIER,
             store=False,
         )
 
@@ -314,9 +316,17 @@ def classify_comment(
             "comment_type": row["comment_type"],
             "run_no": run_no,
             "sentiment": result.sentiment.value,
-            "target": result.target.value,
-            "stance": result.stance.value,
-            "is_sarcasm_mockery": result.is_sarcasm_mockery,
+            "target": (
+                result.target_attitude.target.value
+            ),
+            "stance": (
+                result.target_attitude.stance.value
+            ),
+            "is_sarcasm_mockery": (
+                result.is_sarcasm_mockery
+            ),
+            "reason": result.reason,
+            "service_tier": OPENAI_SERVICE_TIER,
             "model": OPENAI_MODEL,
             "prompt_version": PROMPT_VERSION,
             "prompt_hash": prompt_hash,
@@ -344,8 +354,8 @@ def classify_comment(
             "target": "",
             "stance": "",
             "is_sarcasm_mockery": "",
-            "model_confidence": "",
-            "rationale": "",
+            "reason": "",
+            "service_tier": OPENAI_SERVICE_TIER,
             "model": OPENAI_MODEL,
             "prompt_version": PROMPT_VERSION,
             "prompt_hash": prompt_hash,
@@ -375,8 +385,8 @@ def main() -> None:
 
     client = OpenAI(
         api_key=OPENAI_API_KEY,
-        max_retries=3,
-        timeout=60.0,
+        max_retries=5,
+        timeout=900.0,
     )
 
     total_jobs = len(df) * REPEAT_COUNT
@@ -384,7 +394,7 @@ def main() -> None:
     new_count = 0
 
     print("=" * 60)
-    print("GPT 반복 분류 시작")
+    print("GPT 분류 시작")
     print("=" * 60)
     print(f"분석 단위: {len(df)}개")
     print(f"반복 횟수: {REPEAT_COUNT}회")
@@ -450,7 +460,7 @@ def main() -> None:
 
     print()
     print("=" * 60)
-    print("GPT 반복 분류 완료")
+    print("GPT 분류 완료")
     print("=" * 60)
     print(f"성공: {success_count}건")
     print(f"오류: {error_count}건")

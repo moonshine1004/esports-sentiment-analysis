@@ -10,7 +10,6 @@ import pandas as pd
 from config import (
     HUMAN_DIR,
     HUMAN_SAMPLE_MAX,
-    CODER2_SAMPLE_SIZE,
     RANDOM_SEED,
     INTERIM_DIR,
 )
@@ -259,16 +258,16 @@ def sample_comments(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    코더 1용 500건과 코더 2용 공통 표본 150건을 선정
+    인간 코더용 300건을 층화 추출
     """
-    coder1_sample_size = min(
+    sample_size = min(
         HUMAN_SAMPLE_MAX,
         len(df),
     )
 
     sampled_df = draw_stratified_sample(
         df,
-        coder1_sample_size,
+        sample_size,
         seed_offset=0,
     )
 
@@ -276,26 +275,6 @@ def sample_comments(
         frac=1,
         random_state=RANDOM_SEED,
     ).reset_index(drop=True)
-
-    coder2_sample_size = min(
-        CODER2_SAMPLE_SIZE,
-        len(sampled_df),
-    )
-
-    coder2_df = draw_stratified_sample(
-        sampled_df,
-        coder2_sample_size,
-        seed_offset=1000,
-    )
-
-    coder2_ids = set(
-        coder2_df["analysis_unit_id"]
-    )
-
-    sampled_df["coder2_overlap"] = (
-        sampled_df["analysis_unit_id"]
-        .isin(coder2_ids)
-    )
 
     sampled_df.insert(
         0,
@@ -331,7 +310,6 @@ def save_results(
         "raw_text",
         "analysis_text",
         "parent_text",
-        "coder2_overlap",
     ]
 
     df = df[
@@ -379,12 +357,7 @@ def main() -> None:
     print("=" * 60)
     print("인간 코딩 표본 추출 완료")
     print("=" * 60)
-    print(f"추출 표본: {len(sampled_df)}개")
-
-    coder2_count = int(
-        sampled_df["coder2_overlap"].sum()
-    )
-    print(f"코더 2 공통 표본: {coder2_count}개")
+    print(f"인간 코딩 표본: {len(sampled_df)}개")
     
     print(f"전체 자료 대비 비율: {sample_ratio:.2f}%")
 

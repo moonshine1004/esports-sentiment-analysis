@@ -25,7 +25,8 @@ class TargetLabel(str, Enum):
     LEAGUE = "league"
     PLAYER = "player"
     GAME_SYSTEM = "game_system"
-    NONE = "none"
+    OTHER_COMMENTER = "other_commenter"
+    OTHER = "other"
 
 
 # =====================================================================

@@ -97,6 +97,7 @@ def load_predictions() -> pd.DataFrame:
         "response_id",
         "status",
         "error_message",
+        "reason",
     }
 
     missing_columns = (
@@ -355,6 +356,8 @@ def create_final_predictions(
         "response_id",
         "started_at_utc",
         "completed_at_utc",
+        "reason",
+        "service_tier",
     ]
 
     prediction_columns = [
@@ -375,6 +378,7 @@ def create_final_predictions(
             "is_sarcasm_mockery": (
                 "gpt_is_sarcasm_mockery"
             ),
+            "reason": "gpt_reason",
         }
     )
 

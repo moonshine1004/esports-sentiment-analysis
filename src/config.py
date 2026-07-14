@@ -95,6 +95,11 @@ OPENAI_API_KEY = read_string_env("OPENAI_API_KEY")
 
 OPENAI_MODEL = read_string_env("OPENAI_MODEL")
 
+OPENAI_SERVICE_TIER = os.getenv(
+    "OPENAI_SERVICE_TIER",
+    "flex",
+).strip().lower()
+
 # =====================================================================
 # 5. 실험 관련 설정
 # =====================================================================
@@ -102,7 +107,7 @@ OPENAI_MODEL = read_string_env("OPENAI_MODEL")
 # 동일 댓글을 GPT로 반복 분류할 횟수
 REPEAT_COUNT = read_int_env(
     "REPEAT_COUNT",
-    default=5,
+    default=1,
 )
 
 # 인간 코딩 표본 추출 등 무작위 처리의 재현성을 위한 값
@@ -121,12 +126,6 @@ HUMAN_SAMPLE_RATIO = read_float_env(
 HUMAN_SAMPLE_MAX = read_int_env(
     "HUMAN_SAMPLE_MAX",
     default=500,
-)
-
-# 코더 2의 표본 개수
-CODER2_SAMPLE_SIZE = read_int_env(
-    "CODER2_SAMPLE_SIZE",
-    default=150,
 )
 
 # 연속 API 호출 사이에 기다릴 기본 시간
@@ -159,16 +158,6 @@ def validate_common_settings() -> None:
         raise ValueError(
             "HUMAN_SAMPLE_MAX는 1 이상이어야 합니다."
         )
-    
-    if CODER2_SAMPLE_SIZE < 1:
-        raise ValueError(
-            "CODER2_SAMPLE_SIZE는 1 이상이어야 합니다."
-        )
-
-    if CODER2_SAMPLE_SIZE > HUMAN_SAMPLE_MAX:
-        raise ValueError(
-            "CODER2_SAMPLE_SIZE는 HUMAN_SAMPLE_MAX보다 클 수 없습니다."
-        )
 
     if API_DELAY_SECONDS < 0:
         raise ValueError(
@@ -194,6 +183,14 @@ def require_openai_configuration() -> None:
         raise RuntimeError(
             "OPENAI_MODEL이 설정되지 않았습니다. "
             ".env 파일에 실제 사용할 모델 ID를 입력하십시오."
+        )
+    
+    if OPENAI_SERVICE_TIER not in {
+        "auto",
+        "flex",
+    }:
+        raise ValueError(
+            "OPENAI_SERVICE_TIER는 auto 또는 flex여야 합니다."
         )
 
 validate_common_settings()

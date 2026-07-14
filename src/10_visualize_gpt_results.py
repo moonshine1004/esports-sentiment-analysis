@@ -660,7 +660,9 @@ def create_target_by_stance_chart(
 
     ax.set_xticklabels(
         target_labels,
-        fontsize=10,
+        fontsize=9,
+        rotation=15,
+        ha="right",
     )
 
     ax.set_ylabel(
