@@ -36,7 +36,7 @@ INPUT_PATH = (
 
 PROMPT_PATH = (
     PROMPTS_DIR
-    / "classification_prompt_v3.txt"
+    / "classification_prompt_v4.txt"
 )
 
 OUTPUT_CSV_PATH = (
