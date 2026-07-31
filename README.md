@@ -601,20 +601,4 @@ GPT 원시 응답
 
 ---
 
-## 12. 참고문헌 및 구현 문서
-
-### 12.1 학술적 정의
-
-Sokolova, M., & Lapalme, G. (2009). A systematic analysis of performance measures for classification tasks. *Information Processing & Management, 45*(4), 427–437. https://doi.org/10.1016/j.ipm.2009.03.002
-
-본 README의 Accuracy, Precision, Recall, F1-score 및 다중범주 macro 평균에 관한 정의와 수식은 위 논문의 Table 2와 Table 3 및 pp. 429–430을 기준으로 작성했습니다.
-
-### 12.2 코드 구현 기준
-
-scikit-learn developers. `accuracy_score` documentation. https://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
-
-scikit-learn developers. `precision_recall_fscore_support` documentation. https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html
-
-scikit-learn developers. `confusion_matrix` documentation. https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
-
 본 프로젝트의 실제 계산은 `scikit-learn`의 `accuracy_score`, `precision_recall_fscore_support`, `confusion_matrix`를 사용합니다. 특히 Macro-F1은 클래스별 F1-score의 비가중 산술평균이며, Weighted-F1은 인간 기준 support로 가중한 클래스별 F1-score의 평균입니다.
