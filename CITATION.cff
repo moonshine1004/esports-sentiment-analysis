@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+
+title: "esports-sentiment-analysis"
+
+authors:
+  - family-names: "Kim"
+    given-names: "Jae-uk"
+    orcid:""
+
+repository-code: "https://github.com/moonshine1004/esports-sentiment-analysis"
+
+preferred-citation:
