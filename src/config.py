@@ -2,12 +2,13 @@
 프로젝트 전체에서 공통으로 사용하는 설정을 정의
 1. 프로젝트의 폴더 경로
 2. .env 파일의 환경변수
-3. GPT 반복 횟수와 인간 코딩 표본 설wjd
+3. GPT 반복 횟수와 인간 코딩 표본 설정
 4. API 키 설정 여부 검사
 """
 
 from pathlib import Path
 import os
+from datetime import date
 
 from dotenv import load_dotenv
 
@@ -87,6 +88,16 @@ def read_float_env(name: str, default: float) -> float:
         ) from error
 
 
+def read_date_env(name: str, default: str) -> date:
+    raw_value = read_string_env(name, default)
+    try:
+        return date.fromisoformat(raw_value)
+    except ValueError as error:
+        raise ValueError(
+            f"{name} 값은 YYYY-MM-DD 형식의 날짜여야 합니다. 현재 값: {raw_value}"
+        ) from error
+
+
 # =====================================================================
 # 4. API 관련 설정
 # =====================================================================
@@ -125,8 +136,17 @@ HUMAN_SAMPLE_RATIO = read_float_env(
 # 인간 코딩 표본의 최대 개수
 HUMAN_SAMPLE_MAX = read_int_env(
     "HUMAN_SAMPLE_MAX",
-    default=500,
+    default=300,
 )
+
+# 코더 2와 코더 3이 코더 1과 공통으로 독립 코딩할 표본 수
+INTERCODER_SAMPLE_SIZE = read_int_env(
+    "INTERCODER_SAMPLE_SIZE",
+    default=100,
+)
+
+# 분석 대상 사건(경기) 발생일. 댓글 작성 시점 분포의 기준일로 사용합니다.
+EVENT_DATE = read_date_env("EVENT_DATE", default="2022-07-13")
 
 # 연속 API 호출 사이에 기다릴 기본 시간
 API_DELAY_SECONDS = read_float_env(
@@ -157,6 +177,12 @@ def validate_common_settings() -> None:
     if HUMAN_SAMPLE_MAX < 1:
         raise ValueError(
             "HUMAN_SAMPLE_MAX는 1 이상이어야 합니다."
+        )
+
+    if not 1 <= INTERCODER_SAMPLE_SIZE <= HUMAN_SAMPLE_MAX:
+        raise ValueError(
+            "INTERCODER_SAMPLE_SIZE는 1 이상이며 "
+            "HUMAN_SAMPLE_MAX 이하여야 합니다."
         )
 
     if API_DELAY_SECONDS < 0:

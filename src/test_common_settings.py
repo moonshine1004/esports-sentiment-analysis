@@ -12,6 +12,8 @@ from config import (
     RANDOM_SEED,
     HUMAN_SAMPLE_RATIO,
     HUMAN_SAMPLE_MAX,
+    INTERCODER_SAMPLE_SIZE,
+    EVENT_DATE,
     API_DELAY_SECONDS,
     PROMPT_VERSION,
     YOUTUBE_API_KEY,
@@ -59,6 +61,8 @@ def main() -> None:
     print("랜덤 시드:", RANDOM_SEED)
     print("인간 코딩 비율:", HUMAN_SAMPLE_RATIO)
     print("인간 코딩 최대 표본:", HUMAN_SAMPLE_MAX)
+    print("코더 간 공통 표본:", INTERCODER_SAMPLE_SIZE)
+    print("사건 발생일:", EVENT_DATE)
     print("API 대기시간:", API_DELAY_SECONDS)
     print("프롬프트 버전:", PROMPT_VERSION)
 
@@ -128,11 +132,12 @@ def main() -> None:
     # 실제 API 호출 결과가 아니라 테스트용 가상 결과입니다.
     sample_result = GPTClassificationResult(
         sentiment="negative",
-        target="league",
-        stance="blame",
+        target_attitude={
+            "target": "league",
+            "stance": "blame",
+        },
         is_sarcasm_mockery=True,
-        model_confidence=0.85,
-        rationale="리그 운영을 조롱하며 책임을 묻고 있다.",
+        reason="리그 운영을 조롱하며 책임을 묻고 있다.",
     )
 
     print(sample_result.model_dump(mode="json"))
